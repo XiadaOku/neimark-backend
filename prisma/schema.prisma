@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// компании не могут регаться и создавать мероприятия, тока лекции
+model user {
+  id              String            @id @default(cuid())
+  name            String
+  surname         String
+  level           Int               @default(1)
+  achivements     achivement[]
+  events          event[]
+  savedEvents     savedEvent[]
+  internships     internshipOnUser[]
+}
+
+model savedEvent {
+  userId          String
+  user            user              @relation(fields: [userId], references: [id])
+  eventId         String
+  event           event             @relation(fields: [eventId], references: [id])
+  rank            Int?
+  @@id([userId, eventId])
+}
+
+model achivement {
+  id              String            @id @default(cuid())
+  level           Int               @default(1)
+  typeId          String
+  type            achivementType    @relation(fields: [typeId], references: [id])
+  userId          String
+  user            user              @relation(fields: [userId], references: [id])
+}
+
+model achivementType {
+  id              String            @id @default(cuid())
+  title           String
+  description     String
+  iconLink        String
+  achivements     achivement[]
+  events          eventOnType[]
+  internships     internshipOnType[]
+}
+
+model event {
+  id              String            @id @default(cuid())
+  title           String
+  description     String
+  review          String
+  userId          String
+  maxPeople       Int
+  record          String?
+  authorVideo     String?
+  user            user              @relation(fields: [userId], references: [id])
+  date            DateTime
+  types           eventOnType[]
+  isReviewed      Boolean           @default(false)
+  savedEvents     savedEvent[]
+}
+
+model eventOnType {
+  eventId          String
+  event            event            @relation(fields: [eventId], references: [id])
+  
+  typeId          String
+  type            achivementType    @relation(fields: [typeId], references: [id])
+
+  @@id([eventId, typeId])
+}
+
+model internship {
+  id              String            @id @default(cuid())
+  title           String
+  description     String
+  companyId       String
+  company         company           @relation(fields: [companyId], references: [id])
+  types           internshipOnType[]
+  users           internshipOnUser[]
+}
+
+model internshipOnType {
+  internshipId    String
+  internship      internship        @relation(fields: [internshipId], references: [id])
+  
+  typeId          String
+  type            achivementType    @relation(fields: [typeId], references: [id])
+
+  @@id([internshipId, typeId])
+}
+
+model company {
+  id              String            @id @default(cuid())
+  title           String
+  internships     internship[]
+}
+
+model internshipOnUser {
+  internshipId    String
+  internship      internship        @relation(fields: [internshipId], references: [id])
+  
+  userId          String
+  user            user              @relation(fields: [userId], references: [id])
+
+  @@id([internshipId, userId])
+}
