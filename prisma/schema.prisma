@@ -109,3 +109,25 @@ model internshipOnUser {
 
   @@id([internshipId, userId])
 }
+
+
+model authUser {
+  id              String        @id @default(cuid())
+  refreshToken    String?
+  tokens          authToken[]
+  local           authLocal?
+}
+
+model authLocal {
+  id              String        @id @default(cuid())
+  password        String
+  userId          String        @unique
+  user            authUser      @relation(fields: [userId], references: [id])
+}
+
+model authToken {
+  id              String        @id @default(cuid())
+  token           String
+  userId          String
+  user            authUser      @relation(fields: [userId], references: [id])
+}
